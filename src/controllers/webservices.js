@@ -31,7 +31,7 @@ async function CS(req, res) {
                             const { oNoDUI, oNoNIT } = result.output;
                             var args = {"inputDocumento": {"usuario":oUser, "clave":oPass, "dui":oNoDUI, "nit":oNoNIT}};
 
-                            soap.createClient(oUrl, function(err, client) { console.log(err);
+                            soap.createClient(oUrl, function(err, client) {
                                 if (err == null) {
                                     client.getInformacionCrediticiaDocumento(args, function(err, result) {
                                         var resultJson = convert.xml2json(result.InformacionCandidato, {compact: true, spaces: 4});
@@ -109,6 +109,7 @@ async function CS(req, res) {
                                         }
                                     });
                                 } else {
+                                    console.log(err);
                                     return res.status(200).send({
                                         error: true,
                                         codigo: 'CS',
@@ -335,69 +336,78 @@ async function BURO(req, res) {
                                 });
                             } else {
                                 soap.createClient(oUrl, function(err, client) {
-                                    client.addSoapHeader(soapHeader,"Authentication","ns","https://www.infored.com.sv/wsCreditRating/");
-                                    client.ImgRepPrincipal(argsI, function(err, result) {
-                                        if(result.body == undefined){
-                                            var resultJson = result;
-                                            var vCodigo = ('00');
-                                            var vMensaje = ('OK');
+                                    if (err == null) {
+                                        client.addSoapHeader(soapHeader,"Authentication","ns","https://www.infored.com.sv/wsCreditRating/");
+                                        client.ImgRepPrincipal(argsI, function(err, result) {
+                                            if(result.body == undefined){
+                                                var resultJson = result;
+                                                var vCodigo = ('00');
+                                                var vMensaje = ('OK');
 
-                                            var vRptTIFF = (resultJson.ImgRepPrincipalResult);
-                                            rBUROS5
-                                               .input("idwebservice", 3)
-                                               .input("idusers", idusers)
-                                               .input("idrespuesta", idrespuesta)
-                                               .input("resultjson", vRptTIFF)
-                                               .input("cdg_retorno", vCodigo)
-                                               .input("msj_retorno", vMensaje)
-                                               .query("INSERT INTO sys_log_ws (idwebservice,idusers,idrespuesta,resultjson,cdg_retorno,msj_retorno) " +
-                                                      "VALUES (@idwebservice, @idusers, @idrespuesta, @resultjson, @cdg_retorno, @msj_retorno)",
-                                                   (err, result) => { if (err) { console.log(err); } });
-                                            
-                                            let now= new Date();
-                                            let nameFile = now.getTime();
-                                            fs.writeFile('buros/' + nameFile + '.tiff', vRptTIFF, 'base64', async function(err) {
-                                                //await imagesToPdf(['buros/' + nameFile + '.tiff'], 'buros/' + nameFile + '.pdf');
-                                                convertapi.convert('pdf', {File: ('buros/' + nameFile + '.tiff')}, 'tiff').then(async function(result) {
-                                                    await result.saveFiles('buros/');
-                                                    fs.readFile('buros/' + nameFile + '.pdf', async function(err, data){
-                                                        var vRptPDF = await Buffer.from(data).toString('base64');
-
-                                                        return res.status(200).send({
-                                                            error: false,
-                                                            codigo: vCodigo,
-                                                            mensaje: vMensaje,
-                                                            rptbase64: vRptPDF
+                                                var vRptTIFF = (resultJson.ImgRepPrincipalResult);
+                                                rBUROS5
+                                                .input("idwebservice", 3)
+                                                .input("idusers", idusers)
+                                                .input("idrespuesta", idrespuesta)
+                                                .input("resultjson", vRptTIFF)
+                                                .input("cdg_retorno", vCodigo)
+                                                .input("msj_retorno", vMensaje)
+                                                .query("INSERT INTO sys_log_ws (idwebservice,idusers,idrespuesta,resultjson,cdg_retorno,msj_retorno) " +
+                                                        "VALUES (@idwebservice, @idusers, @idrespuesta, @resultjson, @cdg_retorno, @msj_retorno)",
+                                                    (err, result) => { if (err) { console.log(err); } });
+                                                
+                                                let now = new Date();
+                                                let nameFile = now.getTime();
+                                                let fullPath = '/var/www/html/osf_digital_api/buros/';
+                                                fs.writeFile(fullPath + nameFile + '.tiff', vRptTIFF, 'base64', async function(err) {
+                                                    convertapi.convert('pdf', {File: (fullPath + nameFile + '.tiff')}, 'tiff').then(async function(result) {
+                                                        await result.saveFiles(fullPath);
+                                                        fs.readFile(fullPath + nameFile + '.pdf', async function(err, data){
+                                                            var vRptPDF = await Buffer.from(data).toString('base64');
+                                                            fs.unlinkSync(fullPath + nameFile + '.tiff');
+                                                            return res.status(200).send({
+                                                                error: false,
+                                                                codigo: vCodigo,
+                                                                mensaje: vMensaje,
+                                                                rptbase64: vRptPDF
+                                                            });
                                                         });
                                                     });
                                                 });
-                                            });
-                                        } else {
-                                            var resultJson = convert.xml2json(result.body.replace(/soap:/g,''), {compact: true, spaces: 4});
-                                            resultJson = JSON.parse(resultJson);
-                                            var vCodigo = (result.statusCode);
-                                            var vMensaje = (resultJson.Envelope.Body.Fault.faultstring._text);
+                                            } else {
+                                                var resultJson = convert.xml2json(result.body.replace(/soap:/g,''), {compact: true, spaces: 4});
+                                                resultJson = JSON.parse(resultJson);
+                                                var vCodigo = (result.statusCode);
+                                                var vMensaje = (resultJson.Envelope.Body.Fault.faultstring._text);
 
-                                            rBUROS6
-                                               .input("idwebservice", 3)
-                                               .input("idusers", idusers)
-                                               .input("idrespuesta", idrespuesta)
-                                               .input("cdg_retorno", vCodigo)
-                                               .input("msj_retorno", vMensaje)
-                                               .query("INSERT INTO sys_log_ws (idwebservice,idusers,idrespuesta,cdg_retorno,msj_retorno) " +
-                                                      "VALUES (@idwebservice, @idusers, @idrespuesta, @cdg_retorno, @msj_retorno)",
-                                                   (err, result) => {
-                                                       if (err) { console.log(err); }
-                                               });
-                                               
-                                           return res.status(200).send({
-                                               error: true,
-                                               codigo: vCodigo,
-                                               mensaje: vMensaje,
-                                               rptbase64: 0
-                                           });
-                                        }
-                                    });
+                                                rBUROS6
+                                                .input("idwebservice", 3)
+                                                .input("idusers", idusers)
+                                                .input("idrespuesta", idrespuesta)
+                                                .input("cdg_retorno", vCodigo)
+                                                .input("msj_retorno", vMensaje)
+                                                .query("INSERT INTO sys_log_ws (idwebservice,idusers,idrespuesta,cdg_retorno,msj_retorno) " +
+                                                        "VALUES (@idwebservice, @idusers, @idrespuesta, @cdg_retorno, @msj_retorno)",
+                                                    (err, result) => {
+                                                        if (err) { console.log(err); }
+                                                });
+                                                
+                                                return res.status(200).send({
+                                                    error: true,
+                                                    codigo: vCodigo,
+                                                    mensaje: vMensaje,
+                                                    rptbase64: 0
+                                                });
+                                            }
+                                        });
+                                    } else {
+                                        console.log(err);
+                                        return res.status(200).send({
+                                            error: true,
+                                            codigo: 'BURO',
+                                            mensaje: 'Hay problemas con INFORED'
+                                        });
+                                    }
                                 });
                             }
                         } else { console.log(err); }
@@ -493,67 +503,76 @@ async function BURO_PARAMS(req, res) {
                     });
                 } else {
                     soap.createClient(oUrl, function(err, client) {
-                        client.addSoapHeader(soapHeader,"Authentication","ns","https://www.infored.com.sv/wsCreditRating/");
-                        client.ImgRepPrincipal(argsI, function(err, result) {
-                            if(result.body == undefined){
-                                var resultJson = result;
-                                var vCodigo = ('00');
-                                var vMensaje = ('OK');
+                        if (err == null) {
+                            client.addSoapHeader(soapHeader,"Authentication","ns","https://www.infored.com.sv/wsCreditRating/");
+                            client.ImgRepPrincipal(argsI, function(err, result) {
+                                if(result.body == undefined){
+                                    var resultJson = result;
+                                    var vCodigo = ('00');
+                                    var vMensaje = ('OK');
 
-                                var vRptTIFF = (resultJson.ImgRepPrincipalResult);
-                                rBUROS4
-                                   .input("idwebservice", 3)
-                                   .input("idusers", idusers)
-                                   .input("resultjson", vRptTIFF)
-                                   .input("cdg_retorno", vCodigo)
-                                   .input("msj_retorno", vMensaje)
-                                   .query("INSERT INTO sys_log_ws (idwebservice,idusers,resultjson,cdg_retorno,msj_retorno) " +
-                                          "VALUES (@idwebservice, @idusers, @resultjson, @cdg_retorno, @msj_retorno)",
-                                       (err, result) => { if (err) { console.log(err); } });
-                                
-                                let now= new Date();
-                                let nameFile = now.getTime();
-                                fs.writeFile('buros/' + nameFile + '.tiff', vRptTIFF, 'base64', async function(err) {
-                                    //await imagesToPdf(['buros/' + nameFile + '.tiff'], 'buros/' + nameFile + '.pdf');
-                                    convertapi.convert('pdf', {File: ('buros/' + nameFile + '.tiff')}, 'tiff').then(async function(result) {
-                                        await result.saveFiles('buros/');
-                                        fs.readFile('buros/' + nameFile + '.pdf', async function(err, data){
-                                            var vRptPDF = await Buffer.from(data).toString('base64');
-
-                                            return res.status(200).send({
-                                                error: false,
-                                                codigo: vCodigo,
-                                                mensaje: vMensaje,
-                                                rptbase64: vRptPDF
+                                    var vRptTIFF = (resultJson.ImgRepPrincipalResult);
+                                    rBUROS4
+                                    .input("idwebservice", 3)
+                                    .input("idusers", idusers)
+                                    .input("resultjson", vRptTIFF)
+                                    .input("cdg_retorno", vCodigo)
+                                    .input("msj_retorno", vMensaje)
+                                    .query("INSERT INTO sys_log_ws (idwebservice,idusers,resultjson,cdg_retorno,msj_retorno) " +
+                                            "VALUES (@idwebservice, @idusers, @resultjson, @cdg_retorno, @msj_retorno)",
+                                        (err, result) => { if (err) { console.log(err); } });
+                                    
+                                    let now = new Date();
+                                    let nameFile = now.getTime();
+                                    let fullPath = '/var/www/html/osf_digital_api/buros/';
+                                    fs.writeFile(fullPath + nameFile + '.tiff', vRptTIFF, 'base64', async function(err) {
+                                        convertapi.convert('pdf', {File: (fullPath + nameFile + '.tiff')}, 'tiff').then(async function(result) {
+                                            await result.saveFiles(fullPath);
+                                            fs.readFile(fullPath + nameFile + '.pdf', async function(err, data){
+                                                var vRptPDF = await Buffer.from(data).toString('base64');
+                                                fs.unlinkSync(fullPath + nameFile + '.tiff');
+                                                return res.status(200).send({
+                                                    error: false,
+                                                    codigo: vCodigo,
+                                                    mensaje: vMensaje,
+                                                    rptbase64: vRptPDF
+                                                });
                                             });
                                         });
                                     });
-                                });
-                            } else {
-                                var resultJson = convert.xml2json(result.body.replace(/soap:/g,''), {compact: true, spaces: 4});
-                                resultJson = JSON.parse(resultJson);
-                                var vCodigo = (result.statusCode);
-                                var vMensaje = (resultJson.Envelope.Body.Fault.faultstring._text);
+                                } else {
+                                    var resultJson = convert.xml2json(result.body.replace(/soap:/g,''), {compact: true, spaces: 4});
+                                    resultJson = JSON.parse(resultJson);
+                                    var vCodigo = (result.statusCode);
+                                    var vMensaje = (resultJson.Envelope.Body.Fault.faultstring._text);
 
-                                rBUROS5
-                                   .input("idwebservice", 3)
-                                   .input("idusers", idusers)
-                                   .input("cdg_retorno", vCodigo)
-                                   .input("msj_retorno", vMensaje)
-                                   .query("INSERT INTO sys_log_ws (idwebservice,idusers,cdg_retorno,msj_retorno) " +
-                                          "VALUES (@idwebservice, @idusers, @cdg_retorno, @msj_retorno)",
-                                       (err, result) => {
-                                           if (err) { console.log(err); }
-                                   });
-                                   
-                               return res.status(200).send({
-                                   error: true,
-                                   codigo: vCodigo,
-                                   mensaje: vMensaje,
-                                   rptbase64: 0
-                               });
-                            }
-                        });
+                                    rBUROS5
+                                    .input("idwebservice", 3)
+                                    .input("idusers", idusers)
+                                    .input("cdg_retorno", vCodigo)
+                                    .input("msj_retorno", vMensaje)
+                                    .query("INSERT INTO sys_log_ws (idwebservice,idusers,cdg_retorno,msj_retorno) " +
+                                            "VALUES (@idwebservice, @idusers, @cdg_retorno, @msj_retorno)",
+                                        (err, result) => {
+                                            if (err) { console.log(err); }
+                                    });
+                                    
+                                    return res.status(200).send({
+                                        error: true,
+                                        codigo: vCodigo,
+                                        mensaje: vMensaje,
+                                        rptbase64: 0
+                                    });
+                                }
+                            });
+                        } else {
+                            console.log(err);
+                            return res.status(200).send({
+                                error: true,
+                                codigo: 'BURO',
+                                mensaje: 'Hay problemas con INFORED'
+                            });
+                        }
                     });
                 }
             } else {

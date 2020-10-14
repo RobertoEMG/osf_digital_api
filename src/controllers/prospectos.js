@@ -89,7 +89,15 @@ async function Prospecto(req, res) {
         .execute("dbo.SP_PROSPECTOS", async function(err, result) {
             if (!err) {
                 const { oSuccess, oMsgError, oIdRespuesta, oNoDUI, oPathUser, oPathDocs } = result.output;
-                console.log('=====>> [SP_PROSPECTOS] :: ' + result.output);
+                console.log('=====>> [SP_PROSPECTOS]'); console.log(result.output);
+
+                try {
+                    var lPathDocs = JSON.parse(oPathDocs);
+                    for(var key in lPathDocs) {
+                        fs.unlinkSync(lPathDocs[key]['dir']);
+                    }
+                } catch(e) { console.log(err); }
+
 
                 if( oSuccess == 1 ){
                     if (idformulario != 1 || (idformulario == 1 && idrespuesta.length > 0)){
@@ -110,7 +118,7 @@ async function Prospecto(req, res) {
                             source.on('error', function(err) { console.info(err); });
                         }*/
     
-                        var lPathUser = 'documentos/';
+                        /*var lPathUser = 'documentos/';
                         vNoDui = ((vNoDui.length > 0)? vNoDui: oNoDUI.replace(/-/g,''));
                         const credentials = { username: config.rs.username, password: config.rs.password };
                         await ssrs.start(config.rs.server, credentials, null, null);
@@ -129,7 +137,7 @@ async function Prospecto(req, res) {
                                 .query("INSERT INTO app_respuestas_b64 (idrespuesta,idpregunta,file_base64) " +
                                        "VALUES (@idrespuesta, @idpregunta, @file_base64)",
                                     (err, result) => { if (err) { console.log(err); } });
-                        });
+                        });*/
                     }
                 }
                 
