@@ -45,6 +45,7 @@ async function Prospecto(req, res) {
 
     var dtsBase64 = '[';
     var vNoDui = '';
+    var lPath = '/var/www/html/osf_digital_api/documentos/';
     var dtsJson = JSON.parse(datosjson);
     for(var i = 0; i< dtsJson.length; i++){
         let now= new Date();
@@ -54,17 +55,17 @@ async function Prospecto(req, res) {
         if(vIdPregunta == 1){ vNoDui = vRespuesta; }
         if(dtsJson[i].tipo == 'FOTO' && dtsJson[i].respuesta.length > 0){
             nameFile = (idrespuesta + '-' + vIdPregunta + '-' + nameFile + '.jpg');
-            fs.writeFile('documentos/' + nameFile, vRespuesta, 'base64', async function(err) {
+            fs.writeFile(lPath + nameFile, vRespuesta, 'base64', async function(err) {
                 if (err) { console.log(err); }
             });
-            dtsJson[i].respuesta = ('documentos/' + nameFile);
+            dtsJson[i].respuesta = (lPath + nameFile);
             dtsBase64 += '{"idpregunta":' + vIdPregunta + ', "file_base64":"' + vRespuesta + '"}';
         } else if(dtsJson[i].tipo == 'BURO' && dtsJson[i].respuesta.length > 100){
             nameFile = (idrespuesta + '-' + vIdPregunta + '-' + nameFile + '.pdf');
-            fs.writeFile('documentos/' + nameFile, vRespuesta, 'base64', async function(err) {
+            fs.writeFile(lPath + nameFile, vRespuesta, 'base64', async function(err) {
                 if (err) { console.log(err); }
             });
-            dtsJson[i].respuesta = ('documentos/' + nameFile);
+            dtsJson[i].respuesta = (lPath + nameFile);
             dtsBase64 += '{"idpregunta":' + vIdPregunta + ', "file_base64":"' + vRespuesta + '"}';
         }
     }
@@ -89,13 +90,11 @@ async function Prospecto(req, res) {
         .execute("dbo.SP_PROSPECTOS", async function(err, result) {
             if (!err) {
                 const { oSuccess, oMsgError, oIdRespuesta, oNoDUI, oPathUser, oPathDocs } = result.output;
-                console.log('=====>> [SP_PROSPECTOS]'); console.log(result.output);
+                //console.log('=====>> [SP_PROSPECTOS]'); console.log(result.output);
 
                 try {
                     var lPathDocs = JSON.parse(oPathDocs);
-                    for(var key in lPathDocs) {
-                        fs.unlinkSync(lPathDocs[key]['dir']);
-                    }
+                    for (var key in lPathDocs) { fs.unlinkSync(lPathDocs[key]['dir']); }
                 } catch(e) { console.log(err); }
 
 
