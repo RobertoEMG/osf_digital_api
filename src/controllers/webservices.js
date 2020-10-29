@@ -477,7 +477,7 @@ async function BURO_PARAMS(req, res) {
                 var vDUI = (dui.substr(0, 8) + '-' + dui.substr(8, 1));
                 var vNIT = (nit.substr(0, 4) + '-' + nit.substr(4, 6) + '-' + nit.substr(10, 3) + '-' + nit.substr(13, 1));
                 var argsI = {"dui":vDUI, "nit":vNIT};
-                var argsT = {"tipo":"UAT", "docDUI":oNoDUI, "docNIT":oNoNIT};
+                var argsT = {"tipo":"UAT", "docDUI":vDUI, "docNIT":vNIT};
 
                 if (tipoburo == 'E') {
                     soap.createClient(oUrl, function(err, client) {
