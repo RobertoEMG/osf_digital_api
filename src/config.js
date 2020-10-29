@@ -1,6 +1,6 @@
 module.exports = {
     SECRET_TOKEN: 'osf_api_rest',
-    port: process.env.PORT || 3001,
+    port: process.env.PORT || 3000,
     db: {
         user: 'sa',
         password: 'AdminSA$2019',

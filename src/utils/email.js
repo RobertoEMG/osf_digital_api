@@ -24,7 +24,7 @@ const trans = mailer.createTransport({
 async function sendMail(usuario, nombre, email, clave) {
 
     let info = await trans.sendMail({
-        from: '"OPTIMA - Digital" <grpsistemas@optima.com.sv>',
+        from: '"OPTIMA - Digital" <sistemas@optima.com.sv>',
         to: `"${nombre}" <${email}>`,
         subject: 'Cambio de contraseña',
         html: `
@@ -65,8 +65,8 @@ async function sendMail(usuario, nombre, email, clave) {
 async function SendNoti(asesor, cliente) {
 
     let info = await trans.sendMail({
-        from: '"OPTIMA - Digital" <grpsistemas@optima.com.sv>',
-        to: `"Fabrica de Creditos" <grpfabricadecreditos@optima.com.sv>;"Roberto Montepeque" <roberto.montepeque@optima.com.sv>;`,
+        from: '"OPTIMA - Digital" <sistemas@optima.com.sv>',
+        to: `"Fabrica de Creditos" <fabricadecreditos@optima.com.sv>;"Roberto Montepeque" <roberto.montepeque@optima.com.sv>;`,
         subject: 'Notificación de carga de documentos',
         html: `
             <table width="100%" border="0" cellspacing="0" cellpadding="10">

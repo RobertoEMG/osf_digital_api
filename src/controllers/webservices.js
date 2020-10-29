@@ -1,9 +1,10 @@
-const mssql = require('mssql');
-const cnx = require('../utils/dbase');
-const soap = require('soap');
-const convert = require('xml-js');
-const fs = require('fs');
+const mssql      = require('mssql');
+const cnx        = require('../utils/dbase');
+const soap       = require('soap');
+const convert    = require('xml-js');
+const fs         = require('fs');
 const convertapi = require('convertapi')('I45izUidtEa0YdoM');
+const request    = require("request");
 
 async function CS(req, res) {
     const { idusers, idrespuesta } = req.body;
@@ -244,7 +245,7 @@ async function BURO(req, res) {
     const rBUROS6 = await cnx.request();
 
     rBUROS1
-        .input("idwebservice", ((tipoburo == 'E')?2:3))
+        .input("idwebservice", ((tipoburo == 'E')?2:((tipoburo == 'I')?3:4)))
         .query("SELECT [url] [oUrl], usuario [oUser], clave [oPass]" +
                "  FROM sys_webservices WHERE idwebservice = @idwebservice", (err, result) => {
             if (!err) {
@@ -273,9 +274,10 @@ async function BURO(req, res) {
                             }};
                             var soapHeader  = {"Authentication":{"User": oUser,"Password": oPass,"motivoconsulta": "1"}};
                             var argsI = {"dui":oNoDUI, "nit":oNoNIT};
+                            var argsT = {"tipo":"UAT", "docDUI":oNoDUI, "docNIT":oNoNIT};
 
-                            if (tipoburo == 'E'){
-                                soap.createClient(oUrl, function(err, client) { console.log(err);
+                            if (tipoburo == 'E') {
+                                soap.createClient(oUrl, function(err, client) {
                                     if (err == null) {
                                         client.getInformacionCrediticia(argsE, function(err, result) {
                                             var resultJson = convert.xml2json(result.InformacionCandidato, {compact: true, spaces: 4});
@@ -334,7 +336,7 @@ async function BURO(req, res) {
                                         });
                                     }
                                 });
-                            } else {
+                            } else if (tipoburo == 'I') {
                                 soap.createClient(oUrl, function(err, client) {
                                     if (err == null) {
                                         client.addSoapHeader(soapHeader,"Authentication","ns","https://www.infored.com.sv/wsCreditRating/");
@@ -409,6 +411,31 @@ async function BURO(req, res) {
                                         });
                                     }
                                 });
+                            } else {
+                                request.post({
+                                    "headers": {
+                                        "content-type":"application/json; charset=utf-8"
+                                    },
+                                    "url":oUrl,
+                                    "body": JSON.stringify(argsT)
+                                }, (error, response, body) => {
+                                    if(!error) { 
+                                        var vBody = JSON.parse(body);
+                                        return res.status(200).send({
+                                            error: false,
+                                            codigo: '00',
+                                            mensaje: 'OK',
+                                            rptbase64: vBody.data.rptbase64
+                                        });
+                                    } else {
+                                        console.log(error);
+                                        return res.status(200).send({
+                                            error: true,
+                                            codigo: 'BURO',
+                                            mensaje: 'Hay problemas con TRANSUNION'
+                                        });
+                                    }
+                                });
                             }
                         } else { console.log(err); }
                     });
@@ -450,8 +477,9 @@ async function BURO_PARAMS(req, res) {
                 var vDUI = (dui.substr(0, 8) + '-' + dui.substr(8, 1));
                 var vNIT = (nit.substr(0, 4) + '-' + nit.substr(4, 6) + '-' + nit.substr(10, 3) + '-' + nit.substr(13, 1));
                 var argsI = {"dui":vDUI, "nit":vNIT};
+                var argsT = {"tipo":"UAT", "docDUI":oNoDUI, "docNIT":oNoNIT};
 
-                if (tipoburo == 'E'){
+                if (tipoburo == 'E') {
                     soap.createClient(oUrl, function(err, client) {
                         client.getInformacionCrediticia(argsE, function(err, result) {
                             var resultJson = convert.xml2json(result.InformacionCandidato, {compact: true, spaces: 4});
@@ -501,7 +529,7 @@ async function BURO_PARAMS(req, res) {
                            }
                         });
                     });
-                } else {
+                } else if (tipoburo == 'I') {
                     soap.createClient(oUrl, function(err, client) {
                         if (err == null) {
                             client.addSoapHeader(soapHeader,"Authentication","ns","https://www.infored.com.sv/wsCreditRating/");
@@ -571,6 +599,32 @@ async function BURO_PARAMS(req, res) {
                                 error: true,
                                 codigo: 'BURO',
                                 mensaje: 'Hay problemas con INFORED'
+                            });
+                        }
+                    });
+                } else {
+                    request.post({
+                        "headers": {
+                            "content-type":"application/json; charset=utf-8"
+                        },
+                        "url":oUrl,
+                        "body": JSON.stringify(argsT)
+                    }, (error, response, body) => {
+                        if(!error) { 
+                            var vBody = JSON.parse(body);
+                            return res.status(200).send({
+                                error: false,
+                                codigo: '00',
+                                mensaje: 'OK',
+                                rptbase64: vBody.data.rptbase64
+                            });
+
+                        } else {
+                            console.log(error);
+                            return res.status(200).send({
+                                error: true,
+                                codigo: 'BURO',
+                                mensaje: 'Hay problemas con TRANSUNION'
                             });
                         }
                     });
