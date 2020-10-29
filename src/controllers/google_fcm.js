@@ -36,18 +36,19 @@ async function MsgMasivo(req, res) {
         if (!err) {
             var dtsJson = (result.recordset);
             for(var i = 0; i< dtsJson.length; i++){
-                //console.log(dtsJson[i].token);
                 sendMessaje(
                     "AAAA1jyuLq4:APA91bEEAIZ9ULOF1pYxWYmV1jWzkafSFkB1jtL0l1_ANqw13F40x3YC3V9Vfm6QtN25_bf37wh8JHyMMljHGb86TK27Ge6feF57Kx6Xex_MmShh4XrwwMVDF-yV_S4Zc__19Av4Jr40",
                     dtsJson[i].token,
                     //"-- AVISO IMPORTANTE --",
-                    "Version 1.0.8",
-                    "La actualización ya está lista en el Google Play para su descarga, cuaquier duda nos pueden llamar...",
+                    "Versión 1.0.9",
+                    //"Estimados por este medio les comunico que este dia se publicara una nueva version de la App, para que se actualice el dia de mañana.",
+                    //"La actualización ya está lista en el Google Play para su descarga, cuaquier duda nos pueden llamar...",
                     //"PENDIENTES de la actualización aun se encuentra en PROCESO DE PUBLICACION por parte de Google.",
                     //"Estimados en este momento estamos presentando problemas con el servidor, y puede ser que la App funciones de forma irregular, ya estamos trabajando en resolverlo lo antes posible...",
                     //"Ya esta resuelto el problema, la App deberia funcionar de forma normal y correcta... cualquier cosa estaremos pendiente...",
-                    14,
-                    "true",
+                    "Ya NO es necesario usar el VPN, la aplicación funciona directamente con el plan de datos o wifi.",
+                    17,
+                    "false",
                     function (error, body) {
                         /*return res.status(200).send({
                             error: ((error)?true:false),

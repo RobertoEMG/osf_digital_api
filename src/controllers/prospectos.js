@@ -42,10 +42,10 @@ async function Finalizar(req, res) {
 async function Prospecto(req, res) {
     const { idrespuesta, idusers, idformulario, datosjson, latitud, longitud } = req.body;
     console.log('=====>> [Prospecto] :: ' + idrespuesta + ', ' + idusers + ', ' + idformulario);
-    //console.log(datosjson);
 
     var dtsBase64 = '[';
     var vNoDui = '';
+    var lPath = '/var/www/html/osf_digital_api/documentos/';
     var dtsJson = JSON.parse(datosjson);
     for(var i = 0; i< dtsJson.length; i++){
         let now= new Date();
@@ -55,23 +55,21 @@ async function Prospecto(req, res) {
         if(vIdPregunta == 1){ vNoDui = vRespuesta; }
         if(dtsJson[i].tipo == 'FOTO' && dtsJson[i].respuesta.length > 0){
             nameFile = (idrespuesta + '-' + vIdPregunta + '-' + nameFile + '.jpg');
-            fs.writeFile('documentos/' + nameFile, vRespuesta, 'base64', async function(err) {
+            fs.writeFile(lPath + nameFile, vRespuesta, 'base64', async function(err) {
                 if (err) { console.log(err); }
             });
-            dtsJson[i].respuesta = ('documentos/' + nameFile);
+            dtsJson[i].respuesta = (lPath + nameFile);
             dtsBase64 += '{"idpregunta":' + vIdPregunta + ', "file_base64":"' + vRespuesta + '"}';
         } else if(dtsJson[i].tipo == 'BURO' && dtsJson[i].respuesta.length > 100){
             nameFile = (idrespuesta + '-' + vIdPregunta + '-' + nameFile + '.pdf');
-            fs.writeFile('documentos/' + nameFile, vRespuesta, 'base64', async function(err) {
+            fs.writeFile(lPath + nameFile, vRespuesta, 'base64', async function(err) {
                 if (err) { console.log(err); }
             });
-            dtsJson[i].respuesta = ('documentos/' + nameFile);
+            dtsJson[i].respuesta = (lPath + nameFile);
             dtsBase64 += '{"idpregunta":' + vIdPregunta + ', "file_base64":"' + vRespuesta + '"}';
         }
     }
     dtsBase64 += ']';
-    //console.info(JSON.stringify(dtsJson));
-    //console.info(JSON.parse(dtsBase64.replace(/}{/g,'}, {')));
 
     const request = await cnx.request();
     request
@@ -96,10 +94,9 @@ async function Prospecto(req, res) {
 
                 try {
                     var lPathDocs = JSON.parse(oPathDocs);
-                    for(var key in lPathDocs) {
-                        fs.unlinkSync(lPathDocs[key]['dir']);
-                    }
+                    for (var key in lPathDocs) { fs.unlinkSync(lPathDocs[key]['dir']); }
                 } catch(e) { console.log(err); }
+
 
                 if( oSuccess == 1 ){
                     if (idformulario != 1 || (idformulario == 1 && idrespuesta.length > 0)){
