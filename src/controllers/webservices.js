@@ -460,7 +460,7 @@ async function BURO_PARAMS(req, res) {
     const rBUROS5 = await cnx.request();
 
     rBUROS1
-        .input("idwebservice", ((tipoburo == 'E')?2:3))
+        .input("idwebservice", ((tipoburo == 'E')?2:((tipoburo == 'I')?3:4)))
         .query("SELECT [url] [oUrl], usuario [oUser], clave [oPass]" +
                "  FROM sys_webservices WHERE idwebservice = @idwebservice", (err, result) => {
             if (!err) {
