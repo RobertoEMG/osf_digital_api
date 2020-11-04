@@ -6,8 +6,8 @@ const mailer = require('nodemailer');
 /*const trans = mailer.createTransport({
     service: 'gmail',
     auth: {
-        user: 'development.apps26@gmail.com',
-        pass: 'JoseMG.Devs26'
+        user: '',
+        pass: ''
     }
 });*/
 
