@@ -1,24 +1,17 @@
 const mailer = require('nodemailer');
-/*
- * Debe Permitir el Acceso de apps menos seguras = SÍ
- * https://myaccount.google.com/u/2/lesssecureapps?pli=1&pageId=none
- */
-/*const trans = mailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: '',
-        pass: ''
-    }
-});*/
 
 const trans = mailer.createTransport({
-    host: "smtpout.secureserver.net",
-    port: 465,
-    secure: true, // true for 465, false for other ports
+    host: 'optima-com-sv.mail.protection.outlook.com',
+    port: 25,
+    secure: false,
     auth: {
-      user: "roberto.montepeque@optima.com.sv",
-      pass: "RobertoEMG2685"
+      user: 'notificacionesapps@optima.com.sv',
+    },
+    tls: {
+      rejectUnauthorized: false
     }
+    , debug: true
+    //, logger: true
   });
 
 async function sendMail(usuario, nombre, email, clave) {

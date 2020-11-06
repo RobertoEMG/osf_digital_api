@@ -1,6 +1,7 @@
 const mssql = require('mssql');
 const cnx = require('../utils/dbase');
 const mailer = require('../utils/email');
+const request = require("request");
 
 async function ClienteGeo(req, res) {
     const { idusers, cdg_cliente, tipo, latitud, longitud } = req.body;
@@ -219,16 +220,29 @@ async function ChangeClave(req, res) {
 async function SendNoti(req, res) {
     const { idusers, cliente } = req.body;
     
-    const request = await cnx.request();
-    request.query(`SELECT nombre FROM sys_users WHERE idusers = ${idusers}`, (err, result) => {
-        if (!err) {
+    const cxn = await cnx.request();
+    cxn.query(`SELECT nombre FROM sys_users WHERE idusers = ${idusers}`, (err, result) => {
+        if(!err){
             var dtsJson = (result.recordset);
-            mailer.SendNoti(dtsJson[0].nombre, cliente);
-            return res.status(200).send({
-                error: false,
-                codigo: 200,
-                mensaje: 'Notificación enviada con exito !!!',
-            });
+            //mailer.SendNoti(dtsJson[0].nombre, cliente);
+            let lBody = {
+                usuario: dtsJson[0].nombre,
+                cliente: cliente,
+                email: 'roberto.montepeque@optima.com.sv'
+            };
+            request.post({
+                "headers": {"content-type":  "application/json; charset=utf-8"},
+                "url": "http://localhost:3000/optima_api/notify_carga_docs",
+                "body": JSON.stringify(lBody)
+              }, (error, response, body) => {
+                if(!error){
+                    return res.status(200).send({
+                        error: false,
+                        codigo: 200,
+                        mensaje: 'Notificación enviada con exito !!!',
+                    });
+                }
+              });
         } else {
             console.info(err);
             return res.status(200).send({
