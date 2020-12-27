@@ -24,6 +24,8 @@ routers.post('/tabusuarios', isAuth, bottombar.TabUsuarios);
 const prospectos = require('./controllers/prospectos');
 routers.post('/finalizar_prospecto', isAuth, prospectos.Finalizar);
 routers.post('/prospecto', isAuth, prospectos.Prospecto);
+routers.post('/eval_mati', isAuth, prospectos.EvalMati);
+routers.post('/form_mati', isAuth, prospectos.FormMati);
 
 const empresarial = require('./controllers/empresarial');
 routers.post('/empresa', isAuth, empresarial.Empresa);

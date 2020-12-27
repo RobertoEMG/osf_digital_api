@@ -3,12 +3,13 @@ const mssql = require('mssql');
 const cnx = require('../utils/dbase');
 const fs = require('fs');
 const ssrs = require('mssql-ssrs');
+const request = require("request");
 
 async function Finalizar(req, res) {
     const { idrespuesta } = req.body;
     
-    const request = await cnx.request();
-    request
+    const cxn_req = await cnx.request();
+    cxn_req
         .input("pStep", "F")
         .input("pIdRespuesta", idrespuesta)
         .input("pIdUsers", null)
@@ -71,8 +72,8 @@ async function Prospecto(req, res) {
     }
     dtsBase64 += ']';
 
-    const request = await cnx.request();
-    request
+    const cxn_req = await cnx.request();
+    cxn_req
         .input("pStep", "A")
         .input("pIdRespuesta", (idrespuesta.length<=0)?null:idrespuesta)
         .input("pIdUsers", idusers)
@@ -158,7 +159,107 @@ async function Prospecto(req, res) {
         })
 }
 
+
+async function EvalMati(req, res) {
+    const { idusers, identity, idkey, DUI_A, DUI_R, NIT_A, NIT_R, CDD, LIV_S, LIV_V } = req.body;
+    let lPayLoad = {
+        "cIdKey":idkey, "cFlowId":"5fd0f7e41453ec001bb93e36", "cIdentity":identity,
+        "cDuiA":((DUI_A==undefined)?null:DUI_A), "cDuiR":((DUI_R==undefined)?null:DUI_R),
+        "cNitA":((NIT_A==undefined)?null:NIT_A), "cNitR":((NIT_R==undefined)?null:NIT_R),
+        "cCdd":((CDD==undefined)?null:CDD),
+        "cLivS":((LIV_S==undefined)?null:LIV_S), "cLivV":((LIV_V==undefined)?null:LIV_V),
+        "cOrigen":"Optima Digital"
+    };
+    request.post({
+        "headers": {
+            "content-type":"application/json; charset=utf-8"
+        },
+        "url":"http://localhost:3000/optima_api/mati_review_docs",
+        "body": JSON.stringify(lPayLoad)
+    }, (error, response, body) => {
+        if(!error) { 
+            var vBody = JSON.parse(body);
+            return res.status(200).send({
+                error: false,
+                codigo: '00',
+                mensaje: 'OK',
+                data: vBody
+            });
+
+        } else {
+            console.log(error);
+            return res.status(200).send({
+                error: true,
+                codigo: 'MATI',
+                mensaje: 'Hay problemas con el verificador de documentos.'
+            });
+        }
+    });
+}
+
+async function FormMati(req, res) {
+    const { idusers, idkey, identity, idformulario, datosjson, latitud, longitud } = req.body;
+    console.log('=====>> [Mati] :: '+idusers+', '+idkey+', '+identity+', '+idformulario);
+
+    var dtsBase64 = '[';
+    var lPath = '/var/www/html/osf_digital_api/documentos/';
+    var dtsJson = JSON.parse(datosjson);
+    for(var i = 0; i< dtsJson.length; i++){
+        let now = new Date();
+        var vIdPregunta = dtsJson[i].idpregunta;
+        var vRespuesta = dtsJson[i].respuesta;
+        var vTipo = dtsJson[i].tipo;
+        let lFileName = (idkey+'-'+vIdPregunta+'-'+now.getTime());
+        let lPathFile = (lPath+lFileName+((vTipo=='FOTO')?'.jpg':'.pdf'));
+        if((vTipo == 'FOTO' || vTipo == 'BURO') && dtsJson[i].respuesta.length > 0){
+          fs.writeFile(lPathFile,vRespuesta,'base64',function(err){if(err)console.log(err);});
+          dtsJson[i].respuesta = lPathFile;
+          dtsBase64 += '{"idpregunta":' + vIdPregunta + ', "file_base64":"' + vRespuesta + '"}';
+        }
+    }
+    dtsBase64 += ']';
+
+    const cxn_req = await cnx.request();
+    cxn_req
+        .input("pIdUsers", idusers)
+        .input("pIdkey", idkey)
+        .input("pIdentity", identity)
+        .input("pIdFormulario", idformulario)
+        .input("pDatosJson", JSON.stringify(dtsJson))
+        .input("pBase64Json", JSON.stringify(JSON.parse(dtsBase64.replace(/}{/g,'}, {'))))
+        .input("pLatitud", latitud)
+        .input("pLongitud", longitud)
+        .output("oSuccess", mssql.Int)
+        .output("oMsgError", mssql.NVarChar)
+        .execute("dbo.SP_PROSPECTOS_MATI", async function(err, result) {
+            if (!err) {
+                const { oSuccess, oMsgError } = result.output;
+                try {
+                  for(var i = 0; i < dtsJson.length; i++){
+                    if(dtsJson[i].tipo == 'FOTO' || dtsJson[i].tipo == 'BURO'){
+                      fs.unlinkSync(dtsJson[i].respuesta); 
+                    }
+                  }
+                } catch(e) { console.log(err); }
+                return res.status(200).send({
+                  error: ((oSuccess == 1)? false: true),
+                  codigo: 200,
+                  mensaje: oMsgError
+                });
+            } else {
+                console.info(err);
+                return res.status(200).send({
+                  error: true,
+                  codigo: 404,
+                  mensaje: err
+                });
+            }
+        })
+}
+
 module.exports = {
     Finalizar,
-    Prospecto
+    Prospecto,
+    EvalMati,
+    FormMati
 }
