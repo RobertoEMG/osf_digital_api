@@ -198,63 +198,55 @@ async function EvalMati(req, res) {
 }
 
 async function FormMati(req, res) {
-    const { idusers, idkey, identity, idformulario, datosjson, latitud, longitud } = req.body;
-    console.log('=====>> [Mati] :: '+idusers+', '+idkey+', '+identity+', '+idformulario);
-
-    var dtsBase64 = '[';
-    var lPath = '/var/www/html/osf_digital_api/documentos/';
-    var dtsJson = JSON.parse(datosjson);
-    for(var i = 0; i< dtsJson.length; i++){
-        let now = new Date();
-        var vIdPregunta = dtsJson[i].idpregunta;
-        var vRespuesta = dtsJson[i].respuesta;
-        var vTipo = dtsJson[i].tipo;
-        let lFileName = (idkey+'-'+vIdPregunta+'-'+now.getTime());
-        let lPathFile = (lPath+lFileName+((vTipo=='FOTO')?'.jpg':'.pdf'));
-        if((vTipo == 'FOTO' || vTipo == 'BURO') && dtsJson[i].respuesta.length > 0){
-          fs.writeFile(lPathFile,vRespuesta,'base64',function(err){if(err)console.log(err);});
-          dtsJson[i].respuesta = lPathFile;
-          dtsBase64 += '{"idpregunta":' + vIdPregunta + ', "file_base64":"' + vRespuesta + '"}';
-        }
-    }
-    dtsBase64 += ']';
+    const {
+        idusers, idkey, identity, nit, b64nita, b64nitr, b64autoriza,
+        tipocredito, montosol, fuenteing, cargopub, clicamp, latitud, longitud
+    } = req.body;
+    console.log('=====>> [FormMati] :: '+idusers+', '+idkey+', '+identity+', '+nit);
 
     const cxn_req = await cnx.request();
     cxn_req
-        .input("pIdUsers", idusers)
-        .input("pIdkey", idkey)
-        .input("pIdentity", identity)
-        .input("pIdFormulario", idformulario)
-        .input("pDatosJson", JSON.stringify(dtsJson))
-        .input("pBase64Json", JSON.stringify(JSON.parse(dtsBase64.replace(/}{/g,'}, {'))))
-        .input("pLatitud", latitud)
-        .input("pLongitud", longitud)
-        .output("oSuccess", mssql.Int)
-        .output("oMsgError", mssql.NVarChar)
-        .execute("dbo.SP_PROSPECTOS_MATI", async function(err, result) {
-            if (!err) {
-                const { oSuccess, oMsgError } = result.output;
-                try {
-                  for(var i = 0; i < dtsJson.length; i++){
-                    if(dtsJson[i].tipo == 'FOTO' || dtsJson[i].tipo == 'BURO'){
-                      fs.unlinkSync(dtsJson[i].respuesta); 
-                    }
-                  }
-                } catch(e) { console.log(err); }
-                return res.status(200).send({
-                  error: ((oSuccess == 1)? false: true),
-                  codigo: 200,
-                  mensaje: oMsgError
-                });
-            } else {
-                console.info(err);
-                return res.status(200).send({
-                  error: true,
-                  codigo: 404,
-                  mensaje: err
-                });
-            }
-        })
+    .input("pIdKey", String(idkey))
+    .input("pAcction", 'F')
+    .input("pFullName", null)
+    .input("pPrimNom", null)           .input("pSeguNom", null)   .input("pTerNom", null)
+    .input("pPrimApe", null)           .input("pSeguApe", null)   .input("pApeCasada", null)
+    .input("pNoDUI", null)             .input("pDUIDepto", null)  .input("pDUIMunic", null)
+    .input("pNoNIT", nit)
+    .input("pFechaNac", null)
+    .input("pGenero", null)
+    .input("pDireccion", null)
+    .input("pTipoCredito", tipocredito).input("pMonto", montosol)  .input("pFuenteIng", fuenteing)
+    .input("pCargoPub", cargopub)      .input("pCliCampa", clicamp).input("pIdUsers", idusers)
+    .input("pLatidud", latitud)        .input("pLongitud", longitud)
+    .input("pB64DuiA", null)           .input("pB64DuiR", null)
+    .input("pB64NitA", b64nita)        .input("pB64NitR", b64nitr)
+    .input("pB64ComDom", null)         .input("pB64Autoriza", b64autoriza)
+    .input("pB64Tuca", null)           .input("pB64Infored", null)
+    .input("pB64Mati", null)
+    .query('[10.3.11.18].[OPTIBANDITEST].[dbo].[spMatiSolicitudOD] '
+        + '@pIdKey, @pAcction, @pFullName, @pPrimNom, @pSeguNom, @pTerNom, '
+        + '@pPrimApe, @pSeguApe, @pApeCasada, @pNoDUI, @pDUIDepto, @pDUIMunic, '
+        + '@pNoNIT, @pFechaNac, @pGenero, @pDireccion, @pTipoCredito, @pMonto, '
+        + '@pFuenteIng, @pCargoPub, @pCliCampa, @pIdUsers, @pLatidud, @pLongitud, '
+        + '@pB64DuiA, @pB64DuiR, @pB64NitA, @pB64NitR, @pB64ComDom, @pB64Autoriza, '
+        + '@pB64Tuca, @pB64Infored, @pB64Mati'
+    , async (err, rows) => {
+        if (!err) {
+            return res.status(200).send({
+                error: false,
+                codigo: 200,
+                mensaje: 'Formulario registrado con exito !!!'
+            });
+        } else {
+            console.info(err);
+            return res.status(200).send({
+                error: true,
+                codigo: 404,
+                mensaje: err
+            });
+        }
+    });
 }
 
 module.exports = {
