@@ -199,8 +199,8 @@ async function EvalMati(req, res) {
 
 async function FormMati(req, res) {
     const {
-        idusers, idkey, identity, nit, b64nita, b64nitr, b64autoriza,
-        tipocredito, montosol, fuenteing, cargopub, clicamp, latitud, longitud
+        idusers, idkey, identity, b64autoriza, tipocredito, montosol,
+        fuenteing, cargopub, clicamp, latitud, longitud
     } = req.body;
     console.log('=====>> [FormMati] :: '+idusers+', '+idkey+', '+identity+', '+nit);
 
@@ -212,7 +212,7 @@ async function FormMati(req, res) {
     .input("pPrimNom", null)           .input("pSeguNom", null)   .input("pTerNom", null)
     .input("pPrimApe", null)           .input("pSeguApe", null)   .input("pApeCasada", null)
     .input("pNoDUI", null)             .input("pDUIDepto", null)  .input("pDUIMunic", null)
-    .input("pNoNIT", nit)
+    .input("pNoNIT", null)
     .input("pFechaNac", null)
     .input("pGenero", null)
     .input("pDireccion", null)
@@ -220,7 +220,7 @@ async function FormMati(req, res) {
     .input("pCargoPub", cargopub)      .input("pCliCampa", clicamp).input("pIdUsers", idusers)
     .input("pLatidud", latitud)        .input("pLongitud", longitud)
     .input("pB64DuiA", null)           .input("pB64DuiR", null)
-    .input("pB64NitA", b64nita)        .input("pB64NitR", b64nitr)
+    .input("pB64NitA", null)           .input("pB64NitR", null)
     .input("pB64ComDom", null)         .input("pB64Autoriza", b64autoriza)
     .input("pB64Tuca", null)           .input("pB64Infored", null)
     .input("pB64Mati", null)

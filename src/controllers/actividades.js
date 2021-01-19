@@ -223,10 +223,8 @@ async function SendNoti(req, res) {
     const cxn = await cnx.request();
     cxn.query(`SELECT nombre FROM sys_users WHERE idusers = ${idusers}`, (err, result) => {
         if(!err){
-            var dtsJson = (result.recordset);
-            //mailer.SendNoti(dtsJson[0].nombre, cliente);
             let lBody = {
-                usuario: dtsJson[0].nombre,
+                usuario: result.recordset[0].nombre,
                 cliente: cliente,
                 email: 'roberto.montepeque@optima.com.sv'
             };
@@ -234,7 +232,7 @@ async function SendNoti(req, res) {
                 "headers": {"content-type":  "application/json; charset=utf-8"},
                 "url": "http://localhost:3000/optima_api/notify_carga_docs",
                 "body": JSON.stringify(lBody)
-              }, (error, response, body) => {
+            }, (error, response, body) => {
                 if(!error){
                     return res.status(200).send({
                         error: false,
@@ -242,7 +240,7 @@ async function SendNoti(req, res) {
                         mensaje: 'Notificación enviada con exito !!!',
                     });
                 }
-              });
+            });
         } else {
             console.info(err);
             return res.status(200).send({
@@ -251,7 +249,7 @@ async function SendNoti(req, res) {
                 mensaje: err,
             });
         }
-    })
+    });
 }
 
 module.exports = {
