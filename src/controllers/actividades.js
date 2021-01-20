@@ -193,35 +193,40 @@ async function ChangeClave(req, res) {
     
     const request = await cnx.request();
     request
-        .input("pIdUsers", idusers)
-        .input("pValor", valor)
-        .query("UPDATE a SET passwd = dbo.MD5(@pValor) FROM sys_users_pwd a " +
-               "INNER JOIN sys_users b ON b.idusers = a.idusers " +
-               "WHERE a.actual = 1 AND b.idusers = @pIdUsers; " +
-               "UPDATE sys_users SET locked = 0, intentos = 0 WHERE idusers = @pIdUsers;",
-        (err, result) => {
-            if (!err) {
-                return res.status(200).send({
-                    error: false,
-                    codigo: 200,
-                    mensaje: 'Cambio de clave realizado con Exito !!!'
-                });
-            } else {
-                console.info(err);
-                return res.status(200).send({
-                    error: true,
-                    codigo: 404,
-                    mensaje: err
-                });
-            }
-        })
+    .input("pIdUsers", idusers)
+    .input("pValor", valor)
+    .query("UPDATE a SET passwd = dbo.MD5(@pValor) FROM sys_users_pwd a " +
+            "INNER JOIN sys_users b ON b.idusers = a.idusers " +
+            "WHERE a.actual = 1 AND b.idusers = @pIdUsers; " +
+            "UPDATE sys_users SET locked = 0, intentos = 0 WHERE idusers = @pIdUsers;",
+    (err, result) => {
+        if (!err) {
+            return res.status(200).send({
+                error: false,
+                codigo: 200,
+                mensaje: 'Cambio de clave realizado con Exito !!!'
+            });
+        } else {
+            console.info(err);
+            return res.status(200).send({
+                error: true,
+                codigo: 404,
+                mensaje: err
+            });
+        }
+    });
 }
 
 async function SendNoti(req, res) {
-    const { idusers, cliente } = req.body;
+    const { idusers, idsolicitud, cliente } = req.body;
     
     const cxn = await cnx.request();
-    cxn.query(`SELECT nombre FROM sys_users WHERE idusers = ${idusers}`, (err, result) => {
+    cxn
+    .input("pIdUsers", idusers)
+    .input("pIdSolicitud", idsolicitud)
+    .query(`SELECT nombre FROM sys_users WHERE idusers = @pIdUsers;
+        EXEC [BANKWORKSPRD].[dbo].[SP_CAMBIO_ESTADO] @pIdSolicitud;
+    `, (err, result) => {
         if(!err){
             let lBody = {
                 usuario: result.recordset[0].nombre,
