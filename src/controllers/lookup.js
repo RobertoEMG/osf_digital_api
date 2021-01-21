@@ -30,6 +30,34 @@ async function LookUp(req, res) {
         })
 }
 
+async function GetDatosLOOKUP(req, res) {
+    const { step, idparent } = req.body;
+    
+    const request = await cnx.request();
+    request
+        .input("pStep", step)
+        .input("pIdParent", idparent)
+        .query('EXEC dbo.spGetDatosLOOKUP @pStep, @pIdParent', (err, result) => {
+            if (!err) {
+                return res.status(200).send({
+                    error: false,
+                    codigo: 200,
+                    mensaje: '',
+                    result: (result.recordset)
+                });
+            } else {
+                console.info(err);
+                return res.status(200).send({
+                    error: true,
+                    codigo: 404,
+                    mensaje: err,
+                    result: ''
+                });
+            }
+        })
+}
+
 module.exports = {
-    LookUp
+    LookUp,
+    GetDatosLOOKUP
 }

@@ -57,6 +57,7 @@ routers.post('/buro_params', isAuth, webservices.BURO_PARAMS);
 
 const lookup = require('./controllers/lookup');
 routers.post('/lookup', isAuth, lookup.LookUp);
+routers.post('/getdatoslookup',lookup.GetDatosLOOKUP);
 
 const adjuntos = require('./controllers/adjuntos');
 routers.post('/adjuntos', isAuth, adjuntos.Adjuntos);
