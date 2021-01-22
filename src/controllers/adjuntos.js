@@ -13,9 +13,11 @@ async function Adjuntos(req, res) {
         let now = new Date();
         let nameFile = now.getTime();
         var vRespuesta = dtsJson[i].respuesta;
-        nameFile = (titulo + ' - ' + nameFile + i + '.jpg');
-        await fs.writeFileSync(lPath + nameFile, vRespuesta, 'base64');
-        aPathFiles.push(lPath + nameFile);
+        if(vRespuesta.length > 0){
+            nameFile = (titulo + ' - ' + nameFile + i + '.jpg');
+            await fs.writeFileSync(lPath + nameFile, vRespuesta, 'base64');
+            aPathFiles.push(lPath + nameFile);
+        }
     }
     var vFileName = (lPath + titulo + '.pdf');
     await new Promise((resolve) => { setTimeout(resolve, 1000); });

@@ -202,7 +202,7 @@ async function FormMati(req, res) {
         idusers, idkey, identity, b64autoriza, tipocredito, montosol,
         fuenteing, cargopub, clicamp, latitud, longitud
     } = req.body;
-    console.log('=====>> [FormMati] :: '+idusers+', '+idkey+', '+identity+', '+nit);
+    console.log('=====>> [FormMati] :: '+idusers+', '+idkey+', '+identity);
 
     const cxn_req = await cnx.request();
     cxn_req
