@@ -67,8 +67,9 @@ async function ClienteTel(req, res) {
 }
 
 async function AddGestion(req, res) {
-    const { idusers, cdg_cliente, referencia, accion, reaccion, idpregunta, valor, ispromesa,
-            fecha_promesa, monto_promesa, observacion, latitud, longitud } = req.body;
+    const { idusers, cdg_cliente, referencia, accion, reaccion, idnivel1, idnivel2, idnivel3,
+            idpregunta, valor, ispromesa,fecha_promesa, monto_promesa, observacion, latitud,
+            longitud } = req.body;
 
     const request = await cnx.request();
     request
@@ -77,6 +78,9 @@ async function AddGestion(req, res) {
         .input("referencia", referencia)
         .input("accion", accion)
         .input("reaccion", reaccion)
+        .input("idnivel1", idnivel1)
+        .input("idnivel2", idnivel2)
+        .input("idnivel3", idnivel3)
         .input("idpregunta", idpregunta)
         .input("valor", valor)
         .input("ispromesa", ispromesa)
@@ -85,10 +89,10 @@ async function AddGestion(req, res) {
         .input("observacion", observacion)
         .input("latitud", latitud)
         .input("longitud", longitud)
-        .query("INSERT INTO app_gestiones (idusers,cdg_cliente,referencia,accion,reaccion," +
-               "idpregunta,valor,ispromesa,fecha_promesa,monto_promesa,observacion,latitud,longitud) " +
-                "VALUES (@idusers, @cdg_cliente, @referencia, @accion, @reaccion, @idpregunta, @valor, " +
-                "@ispromesa, @fecha_promesa, @monto_promesa, @observacion, @latitud, @longitud)",
+        .query("INSERT INTO app_gestiones (idusers,cdg_cliente,referencia,accion,reaccion,idnivel1,idnivel2," +
+               "idnivel3,idpregunta,valor,ispromesa,fecha_promesa,monto_promesa,observacion,latitud,longitud) " +
+               "VALUES (@idusers, @cdg_cliente, @referencia, @accion, @reaccion, @idnivel1, @idnivel2, @idnivel3, " +
+               "@idpregunta, @valor, @ispromesa, @fecha_promesa, @monto_promesa, @observacion, @latitud, @longitud)",
             (err, result) => {
                 if (!err) {
                     return res.status(200).send({
