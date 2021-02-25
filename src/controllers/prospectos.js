@@ -208,15 +208,13 @@ async function FormMati(req, res) {
     .input("pIdKey", String(idkey))
     .input("pAcction", 'F')
     .input("pFullName", null)
-    .input("pPrimNom", null)           .input("pSeguNom", null)   .input("pTerNom", null)
-    .input("pPrimApe", null)           .input("pSeguApe", null)   .input("pApeCasada", null)
-    .input("pNoDUI", null)             .input("pDUIDepto", null)  .input("pDUIMunic", null)
+    .input("pPrimNom", null)           .input("pSeguNom", null)           .input("pTerNom", null)
+    .input("pPrimApe", null)           .input("pSeguApe", null)           .input("pApeCasada", null)
+    .input("pNoDUI", null)             .input("pDUIDepto", null)          .input("pDUIMunic", null)
     .input("pNoNIT", null)
-    .input("pFechaNac", null)
-    .input("pGenero", null)
-    .input("pDireccion", null)
-    .input("pTipoCredito", tipocredito).input("pMonto", montosol)  .input("pFuenteIng", fuenteing)
-    .input("pCargoPub", cargopub)      .input("pCliCampa", clicamp).input("pIdUsers", idusers)
+    .input("pFechaNac", null)          .input("pGenero", null)            .input("pDireccion", null)
+    .input("pTipoCredito", tipocredito).input("pMonto", montosol)         .input("pFuenteIng", fuenteing)
+    .input("pCargoPub", cargopub)      .input("pCliCampa", clicamp)       .input("pIdUsers", idusers)
     .input("pLatidud", latitud)        .input("pLongitud", longitud)
     .input("pB64DuiA", null)           .input("pB64DuiR", null)
     .input("pB64NitA", null)           .input("pB64NitR", null)
@@ -224,12 +222,11 @@ async function FormMati(req, res) {
     .input("pB64Tuca", null)           .input("pB64Infored", null)
     .input("pB64Mati", null)
     .query('[10.3.11.18].[OPTIBANDITEST].[dbo].[spMatiSolicitudOD] '
-        + '@pIdKey, @pAcction, @pFullName, @pPrimNom, @pSeguNom, @pTerNom, '
-        + '@pPrimApe, @pSeguApe, @pApeCasada, @pNoDUI, @pDUIDepto, @pDUIMunic, '
-        + '@pNoNIT, @pFechaNac, @pGenero, @pDireccion, @pTipoCredito, @pMonto, '
-        + '@pFuenteIng, @pCargoPub, @pCliCampa, @pIdUsers, @pLatidud, @pLongitud, '
-        + '@pB64DuiA, @pB64DuiR, @pB64NitA, @pB64NitR, @pB64ComDom, @pB64Autoriza, '
-        + '@pB64Tuca, @pB64Infored, @pB64Mati'
+        + '@pIdKey, @pAcction, @pFullName, @pPrimNom, @pSeguNom, @pTerNom, @pPrimApe, @pSeguApe, '
+        + '@pApeCasada, @pNoDUI, @pDUIDepto, @pDUIMunic, @pNoNIT, @pFechaNac, @pGenero, @pDireccion, '
+        + '@pTipoCredito, @pMonto, @pFuenteIng, @pCargoPub, @pCliCampa, '
+        + '@pIdUsers, @pLatidud, @pLongitud, @pB64DuiA, @pB64DuiR, @pB64NitA, @pB64NitR, '
+        + '@pB64ComDom, @pB64Autoriza, @pB64Tuca, @pB64Infored, @pB64Mati'
     , async (err, rows) => {
         if (!err) {
             return res.status(200).send({
