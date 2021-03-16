@@ -220,13 +220,13 @@ async function FormMati(req, res) {
     .input("pB64NitA", null)           .input("pB64NitR", null)
     .input("pB64ComDom", null)         .input("pB64Autoriza", b64autoriza)
     .input("pB64Tuca", null)           .input("pB64Infored", null)
-    .input("pB64Mati", null)
-    .query('[10.3.11.18].[OPTIBANDITEST].[dbo].[spMatiSolicitudOD] '
+    .input("pB64Mati", null)           .input("pWatchlists", null)
+    .query('[OPTIBANDI].[dbo].[spMatiSolicitudOD] '
         + '@pIdKey, @pAcction, @pFullName, @pPrimNom, @pSeguNom, @pTerNom, @pPrimApe, @pSeguApe, '
         + '@pApeCasada, @pNoDUI, @pDUIDepto, @pDUIMunic, @pNoNIT, @pFechaNac, @pGenero, @pDireccion, '
         + '@pTipoCredito, @pMonto, @pFuenteIng, @pCargoPub, @pCliCampa, '
         + '@pIdUsers, @pLatidud, @pLongitud, @pB64DuiA, @pB64DuiR, @pB64NitA, @pB64NitR, '
-        + '@pB64ComDom, @pB64Autoriza, @pB64Tuca, @pB64Infored, @pB64Mati'
+        + '@pB64ComDom, @pB64Autoriza, @pB64Tuca, @pB64Infored, @pB64Mati, @pWatchlists'
     , async (err, rows) => {
         if (!err) {
             return res.status(200).send({
