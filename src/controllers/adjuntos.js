@@ -2,6 +2,7 @@ const mssql = require('mssql');
 const cnx = require('../utils/dbase');
 const fs = require('fs');
 const imagesToPdf = require("images-to-pdf");
+const zlib = require('zlib');
 
 async function Adjuntos(req, res) {
     const { idusers, idsolicitud, titulo, datosjson } = req.body;
@@ -42,6 +43,83 @@ async function Adjuntos(req, res) {
     });
 }
 
+async function ListAdjuntos(req, res) {
+    const { idsolicitud } = req.body;
+    
+    const request = await cnx.request();
+    request
+    .input("pIdSolicitud", mssql.NVarChar, idsolicitud)
+    .query(`
+        SELECT a.WKFFILE [idadjunto], a.WKFDESCRIPCION [descrip]
+          FROM [BANKWORKSPRD].[dbo].[WKFADJUNTO] a
+         WHERE WKFIDSOLICITUD = @pIdSolicitud
+         ORDER BY a.WKFID ASC
+    `, (err, result) => {
+        if (!err) {
+            return res.status(200).send({
+                error: false,
+                codigo: 200,
+                mensaje: '',
+                result: (result.recordset)
+            });
+        } else {
+            console.info(err);
+            return res.status(200).send({
+                error: true,
+                codigo: 404,
+                mensaje: err,
+                result: ''
+            });
+        }
+    })
+}
+
+async function DescargarAdj(req, res) {
+    const { idadjunto } = req.body;
+    
+    const request = await cnx.request();
+    request
+    .input("pIdAdjunto", mssql.NVarChar, idadjunto)
+    .query(`
+        SELECT a.[FileName], a.[Content]
+          FROM [BANKWORKSPRD].[dbo].[FileData] a
+         WHERE Oid = @pIdAdjunto
+    `, async (err, result) => {
+        if (!err) {
+            zlib.unzip(result.recordset[0].Content, (err, buffer)=>{
+                if (err) {
+                    return res.status(200).send({
+                        error: true,
+                        codigo: 404,
+                        mensaje: err,
+                        filename: '',
+                        base64: ''
+                    });
+                } else {
+                    return res.status(200).send({
+                        error: false,
+                        codigo: 200,
+                        mensaje: '',
+                        filename: result.recordset[0].FileName,
+                        base64: (buffer.toString('base64'))
+                    });
+                }
+            });
+        } else {
+            console.info(err);
+            return res.status(200).send({
+                error: true,
+                codigo: 404,
+                mensaje: err,
+                filename: '',
+                base64: ''
+            });
+        }
+    })
+}
+
 module.exports = {
-    Adjuntos
+    Adjuntos,
+    ListAdjuntos,
+    DescargarAdj
 }

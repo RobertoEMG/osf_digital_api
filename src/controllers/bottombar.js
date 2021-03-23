@@ -191,6 +191,47 @@ async function TabUsuarios(req, res) {
         })
 }
 
+async function TabExpedientes(req, res) {
+    const { idusers, search } = req.body;
+    
+    const request = await cnx.request();
+    request
+    .input("pIdUsers", mssql.NVarChar, idusers)
+    .input("pSearch", mssql.NVarChar, search)
+    .query(`
+        SELECT TOP(500) ISNULL(a.WKFPERSONA,a.WKFEMPRESA) [idcliente]
+             , ISNULL(b.CIFNOMBRECLIE,c.CINOMBCOMER) [cliente]
+             , a.WKFIDSOLICITUD [idsolicitud], a.WKFNUMSOLICIT [codsolicitud]
+             , a.WKFNUMCREDITO [referencia]
+             , CONVERT(VARCHAR(10),CAST(a.WKFFCHSOLICIT AS DATE),103) [fecha_sol]
+             , a.WKFMNTSOLICITADO [monto]
+             , (SELECT COUNT(*) FROM [BANKWORKSPRD].[dbo].[WKFADJUNTO] WHERE WKFIDSOLICITUD = a.WKFIDSOLICITUD) [no_docs]
+          FROM [BANKWORKSPRD].[dbo].[WKFSOLICITUD] a
+          LEFT JOIN [BANKWORKSPRD].[dbo].[CIFPERSONA] b ON b.CIFCODPERSONA = a.WKFPERSONA
+          LEFT JOIN [BANKWORKSPRD].[dbo].[CIFEMPRESA] c ON c.CIFCODEMPRESA = a.WKFEMPRESA
+         WHERE ISNULL(a.WKFPERSONA,a.WKFEMPRESA) IS NOT NULL
+           AND ISNULL(b.CIFNOMBRECLIE,c.CINOMBCOMER) LIKE CONCAT('%',REPLACE('${search}',' ','%'),'%')
+         ORDER BY 2, a.WKFFCHSOLICIT ASC
+    `, (err, result) => {
+        if (!err) {
+            return res.status(200).send({
+                error: false,
+                codigo: 200,
+                mensaje: '',
+                result: (result.recordset)
+            });
+        } else {
+            console.info(err);
+            return res.status(200).send({
+                error: true,
+                codigo: 404,
+                mensaje: err,
+                result: ''
+            });
+        }
+    })
+}
+
 module.exports = {
     TabInicio,
     TabInicioCharts,
@@ -198,5 +239,6 @@ module.exports = {
     TabSemaforo,
     TabGestiones,
     TabEmpresarial,
-    TabUsuarios
+    TabUsuarios,
+    TabExpedientes
 }

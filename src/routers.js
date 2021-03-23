@@ -20,6 +20,7 @@ routers.post('/tabsemaforo', isAuth, bottombar.TabSemaforo);
 routers.post('/tabgestiones', isAuth, bottombar.TabGestiones);
 routers.post('/tabempresarial', isAuth, bottombar.TabEmpresarial);
 routers.post('/tabusuarios', isAuth, bottombar.TabUsuarios);
+routers.post('/tabexpedientes', isAuth, bottombar.TabExpedientes);
 
 const prospectos = require('./controllers/prospectos');
 routers.post('/finalizar_prospecto', isAuth, prospectos.Finalizar);
@@ -61,6 +62,8 @@ routers.post('/getdatoslookup',lookup.GetDatosLOOKUP);
 
 const adjuntos = require('./controllers/adjuntos');
 routers.post('/adjuntos', isAuth, adjuntos.Adjuntos);
+routers.post('/list_adjuntos', isAuth, adjuntos.ListAdjuntos);
+routers.post('/descargar_adj', isAuth, adjuntos.DescargarAdj);
 
 const google_fcm = require('./controllers/google_fcm');
 routers.post('/fcm_msgmasivo', google_fcm.MsgMasivo);
