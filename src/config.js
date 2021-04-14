@@ -2,9 +2,12 @@ module.exports = {
     SECRET_TOKEN: 'osf_api_rest',
     port: process.env.PORT || 3001,
     db: {
+        server: '10.3.11.15',
         user: 'sa',
         password: 'AdminSA$2019',
-        server: '10.3.11.15',
+        /*server: '10.5.2.5',
+        user: 'opt.app.dig',
+        password: '0ptim@$2021',*/
         port: 1433,
         database: 'AppDigital',
         connectionTimeout: 300000,

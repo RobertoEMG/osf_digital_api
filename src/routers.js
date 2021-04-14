@@ -64,6 +64,7 @@ const adjuntos = require('./controllers/adjuntos');
 routers.post('/adjuntos', isAuth, adjuntos.Adjuntos);
 routers.post('/list_adjuntos', isAuth, adjuntos.ListAdjuntos);
 routers.post('/descargar_adj', isAuth, adjuntos.DescargarAdj);
+routers.post('/attach_ind_file', isAuth, adjuntos.AttachIndFile);
 
 const google_fcm = require('./controllers/google_fcm');
 routers.post('/fcm_msgmasivo', google_fcm.MsgMasivo);
