@@ -43,6 +43,31 @@ async function Adjuntos(req, res) {
     });
 }
 
+async function AttachIndFile(req, res) {
+    const { idusers, idsolicitud, name, extension, file_base64 } = req.body;
+
+    const rBase64 = await cnx.request();
+    rBase64
+    .input("pIdUsers", idusers)  .input("pIdSolicitud", idsolicitud)
+    .input("pName", name)        .input("pExtension", extension)
+    .input("pFileBase64", file_base64)
+    .query("EXEC dbo.SP_ATTACH_IND_FILE @pIdUsers, @pIdSolicitud, @pName, @pExtension, @pFileBase64"
+    , (err, result) => {
+        if (!err) {
+            return res.status(200).send({
+                error: false, codigo: 200,
+                mensaje: 'Adjunto '+ name + '.' + extension +' cargado con Exito !!!'
+            });
+        } else {
+            console.info(err);
+            return res.status(200).send({
+                error: true, codigo: 404,
+                mensaje: err
+            });
+        }
+    });
+}
+
 async function ListAdjuntos(req, res) {
     const { idsolicitud } = req.body;
     
@@ -120,6 +145,7 @@ async function DescargarAdj(req, res) {
 
 module.exports = {
     Adjuntos,
+    AttachIndFile,
     ListAdjuntos,
     DescargarAdj
 }
