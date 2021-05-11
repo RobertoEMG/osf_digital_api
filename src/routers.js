@@ -18,6 +18,7 @@ routers.post('/tabiniciocharts', isAuth, bottombar.TabInicioCharts);
 routers.post('/tabprospectos', isAuth, bottombar.TabProspectos);
 routers.post('/tabsemaforo', isAuth, bottombar.TabSemaforo);
 routers.post('/tabgestiones', isAuth, bottombar.TabGestiones);
+routers.post('/tabgestionesv2', isAuth, bottombar.TabGestionesV2);
 routers.post('/tabempresarial', isAuth, bottombar.TabEmpresarial);
 routers.post('/tabusuarios', isAuth, bottombar.TabUsuarios);
 routers.post('/tabexpedientes', isAuth, bottombar.TabExpedientes);

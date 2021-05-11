@@ -139,6 +139,32 @@ async function TabGestiones(req, res) {
         })
 }
 
+async function TabGestionesV2(req, res) {
+    const { idusers } = req.body;
+    
+    const request = await cnx.request();
+    request
+        .input("pIdUsers", idusers)
+        .query('EXEC dbo.SP_TAB_GESTIONES_TEST @pIdUsers', (err, result) => {
+            if (!err) {
+                return res.status(200).send({
+                    error: false,
+                    codigo: 200,
+                    mensaje: '',
+                    result: (result.recordset)
+                });
+            } else {
+                console.info(err);
+                return res.status(200).send({
+                    error: true,
+                    codigo: 404,
+                    mensaje: err,
+                    result: ''
+                });
+            }
+        })
+}
+
 async function TabEmpresarial(req, res) {
     const { idusers } = req.body;
     
@@ -238,6 +264,7 @@ module.exports = {
     TabProspectos,
     TabSemaforo,
     TabGestiones,
+    TabGestionesV2,
     TabEmpresarial,
     TabUsuarios,
     TabExpedientes
